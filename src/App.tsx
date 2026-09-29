@@ -1,6 +1,6 @@
 import { useRef, useCallback } from "react";
 import { Canvas } from "./components/Canvas";
-import { CommentPanel } from "./components/comments/CommentPanel";
+import { CommentPanel } from "./components/comments";
 import { useComments } from "./hooks/useComments";
 import type { Point } from "./types/canvas";
 

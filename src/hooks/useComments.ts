@@ -2,87 +2,16 @@ import { useState, useEffect, useCallback } from "react";
 import type { Point } from "../types/canvas";
 import type { CommentThread, CommentStatus, CommentReply } from "../types/comment";
 import { getAvatarColor } from "../utils/comment";
-
-const STORAGE_KEY = "infican_comments_v1";
-const USERNAME_KEY = "infican_username_v1";
-
-const INITIAL_DEMO_THREADS: CommentThread[] = [
-  {
-    id: "thread-1",
-    author: "Alex Morgan",
-    avatarColor: "bg-blue-500",
-    content: "We should consider scaling this red accent block to match the primary grid alignment.",
-    createdAt: Date.now() - 1000 * 60 * 35, // 35 minutes ago
-    position: { x: 100, y: -20 },
-    zoom: 1.5,
-    status: "open",
-    replies: [
-      {
-        id: "reply-1",
-        author: "Sarah Chen",
-        avatarColor: "bg-emerald-500",
-        content: "Agreed! Let's align it with the 40px grid baseline.",
-        createdAt: Date.now() - 1000 * 60 * 25,
-      },
-      {
-        id: "reply-2",
-        author: "Devin Taylor",
-        avatarColor: "bg-amber-500",
-        content: "I tested it with 2x zoom and it feels much more balanced.",
-        createdAt: Date.now() - 1000 * 60 * 15,
-      },
-      {
-        id: "reply-3",
-        author: "Alex Morgan",
-        avatarColor: "bg-blue-500",
-        content: "Sounds great. Updating the geometry now.",
-        createdAt: Date.now() - 1000 * 60 * 5,
-      },
-    ],
-  },
-  {
-    id: "thread-2",
-    author: "Jordan Lee",
-    avatarColor: "bg-purple-500",
-    content: "Origin crosshair (0,0) looks crisp. Ready for the vector exporter.",
-    createdAt: Date.now() - 1000 * 60 * 180, // 3 hours ago
-    position: { x: 0, y: 30 },
-    zoom: 1,
-    status: "resolved",
-    replies: [],
-  },
-];
+import {
+  loadStoredThreads,
+  saveStoredThreads,
+  loadStoredUsername,
+  saveStoredUsername,
+} from "../services/commentStorage";
 
 export function useComments() {
-  const [threads, setThreads] = useState<CommentThread[]>(() => {
-    if (typeof window === "undefined") return INITIAL_DEMO_THREADS;
-    try {
-      const saved = localStorage.getItem(STORAGE_KEY);
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed)) {
-          return parsed.map((t) => ({
-            ...t,
-            zoom: typeof t.zoom === "number" && !isNaN(t.zoom) && t.zoom > 0 ? t.zoom : 1,
-            position: {
-              x: typeof t.position?.x === "number" && !isNaN(t.position.x) ? t.position.x : 0,
-              y: typeof t.position?.y === "number" && !isNaN(t.position.y) ? t.position.y : 0,
-            },
-            replies: Array.isArray(t.replies) ? t.replies : [],
-          }));
-        }
-      }
-    } catch (e) {
-      console.error("Failed to load comments from localStorage:", e);
-    }
-    return INITIAL_DEMO_THREADS;
-  });
-
-  const [currentUser, setCurrentUser] = useState<string>(() => {
-    if (typeof window === "undefined") return "You";
-    return localStorage.getItem(USERNAME_KEY) || "You";
-  });
-
+  const [threads, setThreads] = useState<CommentThread[]>(loadStoredThreads);
+  const [currentUser, setCurrentUser] = useState<string>(loadStoredUsername);
   const [activeFilter, setActiveFilter] = useState<CommentStatus>("open");
   const [activeThreadId, setActiveThreadId] = useState<string | null>(null);
   const [isPlacingComment, setIsPlacingComment] = useState(false);
@@ -90,24 +19,17 @@ export function useComments() {
   const [draftPosition, setDraftPosition] = useState<Point | null>(null);
   const [draftZoom, setDraftZoom] = useState<number | null>(null);
 
-  // Sync threads to localStorage
+  // Sync threads to storage
   useEffect(() => {
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(threads));
-    } catch (e) {
-      console.error("Failed to save comments to localStorage:", e);
-    }
+    saveStoredThreads(threads);
   }, [threads]);
 
-  // Sync currentUser to localStorage
+  // Sync username to storage
   useEffect(() => {
-    try {
-      localStorage.setItem(USERNAME_KEY, currentUser);
-    } catch (e) {
-      console.error("Failed to save username to localStorage:", e);
-    }
+    saveStoredUsername(currentUser);
   }, [currentUser]);
 
+  // Thread CRUD operations
   const createThread = useCallback(
     (position: Point, content: string, customAuthor?: string, zoomLevel?: number): CommentThread => {
       const author = customAuthor?.trim() || currentUser.trim() || "Anonymous";
@@ -136,15 +58,47 @@ export function useComments() {
     [currentUser, draftZoom],
   );
 
+  const editThread = useCallback((threadId: string, content: string) => {
+    const trimmed = content.trim();
+    if (!trimmed) return;
+    setThreads((prev) =>
+      prev.map((thread) =>
+        thread.id === threadId ? { ...thread, content: trimmed } : thread,
+      ),
+    );
+  }, []);
+
+  const deleteThread = useCallback(
+    (threadId: string) => {
+      setThreads((prev) => prev.filter((t) => t.id !== threadId));
+      if (activeThreadId === threadId) {
+        setActiveThreadId(null);
+      }
+    },
+    [activeThreadId],
+  );
+
+  const toggleResolve = useCallback((threadId: string) => {
+    setThreads((prev) =>
+      prev.map((thread) => {
+        if (thread.id !== threadId) return thread;
+        const nextStatus: CommentStatus = thread.status === "open" ? "resolved" : "open";
+        return { ...thread, status: nextStatus };
+      }),
+    );
+  }, []);
+
+  // Reply CRUD operations
   const addReply = useCallback(
     (threadId: string, content: string, customAuthor?: string) => {
-      if (!content.trim()) return;
+      const trimmed = content.trim();
+      if (!trimmed) return;
       const author = customAuthor?.trim() || currentUser.trim() || "Anonymous";
       const newReply: CommentReply = {
         id: `reply-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
         author,
         avatarColor: getAvatarColor(author),
-        content: content.trim(),
+        content: trimmed,
         createdAt: Date.now(),
       };
 
@@ -160,51 +114,6 @@ export function useComments() {
     },
     [currentUser],
   );
-
-  const toggleResolve = useCallback((threadId: string) => {
-    setThreads((prev) =>
-      prev.map((thread) => {
-        if (thread.id !== threadId) return thread;
-        const nextStatus: CommentStatus = thread.status === "open" ? "resolved" : "open";
-        return {
-          ...thread,
-          status: nextStatus,
-        };
-      }),
-    );
-  }, []);
-
-  const deleteThread = useCallback(
-    (threadId: string) => {
-      setThreads((prev) => prev.filter((t) => t.id !== threadId));
-      if (activeThreadId === threadId) {
-        setActiveThreadId(null);
-      }
-    },
-    [activeThreadId],
-  );
-
-  const deleteReply = useCallback((threadId: string, replyId: string) => {
-    setThreads((prev) =>
-      prev.map((thread) => {
-        if (thread.id !== threadId) return thread;
-        return {
-          ...thread,
-          replies: thread.replies.filter((r) => r.id !== replyId),
-        };
-      }),
-    );
-  }, []);
-
-  const editThread = useCallback((threadId: string, content: string) => {
-    const trimmed = content.trim();
-    if (!trimmed) return;
-    setThreads((prev) =>
-      prev.map((thread) =>
-        thread.id === threadId ? { ...thread, content: trimmed } : thread,
-      ),
-    );
-  }, []);
 
   const editReply = useCallback(
     (threadId: string, replyId: string, content: string) => {
@@ -225,6 +134,19 @@ export function useComments() {
     [],
   );
 
+  const deleteReply = useCallback((threadId: string, replyId: string) => {
+    setThreads((prev) =>
+      prev.map((thread) => {
+        if (thread.id !== threadId) return thread;
+        return {
+          ...thread,
+          replies: thread.replies.filter((r) => r.id !== replyId),
+        };
+      }),
+    );
+  }, []);
+
+  // Placement and Draft workflows
   const startPlacingComment = useCallback(() => {
     setIsPlacingComment(true);
     setDraftPosition(null);
@@ -253,7 +175,6 @@ export function useComments() {
   const selectThread = useCallback((threadId: string) => {
     setActiveThreadId(threadId);
     setIsPanelOpen(true);
-    // Find thread and update tab if necessary
     setThreads((prev) => {
       const found = prev.find((t) => t.id === threadId);
       if (found) {
@@ -287,12 +208,12 @@ export function useComments() {
     draftZoom,
     setDraftZoom,
     createThread,
-    addReply,
-    toggleResolve,
-    deleteThread,
-    deleteReply,
     editThread,
+    deleteThread,
+    toggleResolve,
+    addReply,
     editReply,
+    deleteReply,
     openCount,
     resolvedCount,
   };
