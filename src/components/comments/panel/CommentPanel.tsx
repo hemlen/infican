@@ -46,7 +46,7 @@ export const CommentPanel: React.FC<CommentPanelProps> = ({
 
   const threadListRef = useRef<HTMLDivElement | null>(null);
 
-  // Auto-scroll active thread card into view
+  // Scroll to active card when selected from canvas pin; "nearest" prevents jarring shifts if already in view
   useEffect(() => {
     if (!activeThreadId) return;
     const cardEl = document.getElementById(`thread-card-${activeThreadId}`);
@@ -71,7 +71,6 @@ export const CommentPanel: React.FC<CommentPanelProps> = ({
       className="fixed top-0 right-0 h-full w-84 sm:w-96 bg-slate-950/95 backdrop-blur-xl border-l border-slate-800/80 shadow-2xl flex flex-col z-40 transition-transform duration-200 select-none"
       onClick={(e) => e.stopPropagation()}
     >
-      {/* Top Header */}
       <CommentPanelHeader
         totalCount={threads.length}
         isPlacingComment={isPlacingComment}
@@ -85,13 +84,11 @@ export const CommentPanel: React.FC<CommentPanelProps> = ({
         onClose={() => setIsPanelOpen(false)}
       />
 
-      {/* User identity switcher */}
       <CommentUserProfile
         currentUser={currentUser}
         onUpdateUsername={setCurrentUser}
       />
 
-      {/* Filter Tabs */}
       <CommentFilterTabs
         activeFilter={activeFilter}
         openCount={openCount}
@@ -99,7 +96,6 @@ export const CommentPanel: React.FC<CommentPanelProps> = ({
         onSelectFilter={setActiveFilter}
       />
 
-      {/* Scrollable list of threads & drafts */}
       <div ref={threadListRef} className="flex-1 overflow-y-auto p-4 space-y-3">
         {draftPosition && (
           <CommentDraftCard
@@ -137,7 +133,6 @@ export const CommentPanel: React.FC<CommentPanelProps> = ({
         )}
       </div>
 
-      {/* Footer Info */}
       <div className="p-3 border-t border-slate-800/80 text-[10px] text-slate-500 flex items-center justify-between">
         <span>Press Esc to cancel</span>
         <span>Saved locally</span>

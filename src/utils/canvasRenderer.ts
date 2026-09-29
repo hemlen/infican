@@ -11,7 +11,6 @@ export function renderCanvas(
   ctx.save();
   ctx.scale(dpr, dpr);
 
-  // Background
   ctx.fillStyle = "#0b0f19";
   ctx.fillRect(0, 0, width, height);
 
@@ -19,7 +18,8 @@ export function renderCanvas(
   const camX = isNaN(camera.x) ? 0 : camera.x;
   const camY = isNaN(camera.y) ? 0 : camera.y;
 
-  // Adaptive Grid with safety loop guards to prevent infinite while loops
+  // Scale grid step by powers of 2 to keep on-screen spacing visually stable between 20px and 80px.
+  // loopGuard caps iterations to protect against browser freeze if zoom is near-zero or non-finite.
   const baseGridSize = 40;
   let gridSize = baseGridSize;
   let loopGuard = 0;
@@ -44,6 +44,7 @@ export function renderCanvas(
   const countX = Math.abs((endX - startX) / (gridSize || 1));
   const countY = Math.abs((endY - startY) / (gridSize || 1));
 
+  // Cap visible dot count to guarantee 60fps rendering even during rapid zoom transitions
   if (gridSize > 0 && countX < 300 && countY < 300) {
     ctx.fillStyle = "rgba(148, 163, 184, 0.28)";
     for (let x = startX; x <= endX; x += gridSize) {
@@ -58,14 +59,13 @@ export function renderCanvas(
     }
   }
 
-  // Origin crosshair (0,0)
+  // Anchor crosshair indicating world origin (0, 0)
   const originX = camX;
   const originY = camY;
+  const crossSize = 12;
 
   ctx.strokeStyle = "rgba(56, 189, 248, 0.45)";
   ctx.lineWidth = 1.5;
-  const crossSize = 12;
-
   ctx.beginPath();
   ctx.moveTo(originX - crossSize, originY);
   ctx.lineTo(originX + crossSize, originY);
@@ -77,7 +77,7 @@ export function renderCanvas(
   ctx.fillStyle = "rgba(56, 189, 248, 0.7)";
   ctx.fillText("(0, 0)", originX + 6, originY - 6);
 
-  // Reference test object
+  // Baseline reference object for spatial orientation and zoom verification
   const squareWorldPos = { x: 100, y: 0 };
   const squareWorldSize = 60;
   const squareScreenPos = worldToScreen(squareWorldPos, { x: camX, y: camY, zoom });

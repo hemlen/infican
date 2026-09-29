@@ -37,14 +37,14 @@ export function Canvas({ comments, onRegisterPanTo }: CanvasProps) {
   const lastWheelTimeRef = useRef<number>(0);
   const accelVelocityRef = useRef<number>(1);
 
-  // Register pan function with parent
+  // Expose panToWorld imperatively so sidebar cards can fly the camera without prop drilling
   useEffect(() => {
     if (onRegisterPanTo) {
       onRegisterPanTo(panToWorld);
     }
   }, [onRegisterPanTo, panToWorld]);
 
-  // Handle escape key shortcuts
+  // Esc clears modal states in priority order: active draft -> placement crosshairs -> active selection
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
@@ -61,7 +61,9 @@ export function Canvas({ comments, onRegisterPanTo }: CanvasProps) {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [comments]);
 
-  // Zoom wheel handling with trackpad detection & mouse acceleration
+  // Handle zoom with device-appropriate response:
+  // Trackpads send continuous fractional deltaY (no acceleration needed);
+  // Physical mouse wheels send notched integer steps that benefit from velocity ramping.
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -85,6 +87,7 @@ export function Canvas({ comments, onRegisterPanTo }: CanvasProps) {
         acceleration = accelVelocityRef.current;
       }
 
+      // Exponential zoom maintains uniform percentage increments across orders of magnitude
       const zoomFactor = Math.exp(-e.deltaY * 0.0015 * acceleration);
       const rect = canvas.getBoundingClientRect();
       const mouseX = e.clientX - rect.left;
@@ -99,7 +102,6 @@ export function Canvas({ comments, onRegisterPanTo }: CanvasProps) {
     };
   }, [zoomAt]);
 
-  // Draw loop delegated to renderCanvas
   const draw = useCallback(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -111,6 +113,7 @@ export function Canvas({ comments, onRegisterPanTo }: CanvasProps) {
     const width = window.innerWidth;
     const height = window.innerHeight;
 
+    // Synchronize buffer pixel count with physical device pixels for high-DPI display crispness
     if (canvas.width !== width * dpr || canvas.height !== height * dpr) {
       canvas.width = width * dpr;
       canvas.height = height * dpr;
@@ -134,7 +137,7 @@ export function Canvas({ comments, onRegisterPanTo }: CanvasProps) {
     };
   }, [draw]);
 
-  // Canvas mouse down handler - intercepts placement mode clicks immediately
+  // Intercept left-click during placement mode before pan listener initiates camera drag
   const handleCanvasMouseDown = (e: React.MouseEvent<HTMLCanvasElement>) => {
     if (comments.isPlacingComment && e.button === 0) {
       e.preventDefault();
@@ -155,7 +158,6 @@ export function Canvas({ comments, onRegisterPanTo }: CanvasProps) {
     handleMouseDown(e);
   };
 
-  // Canvas click handler for deselecting active comment on empty canvas space
   const handleCanvasClick = (e: React.MouseEvent<HTMLCanvasElement>) => {
     if (!comments.isPlacingComment && !comments.draftPosition && e.button === 0) {
       comments.setActiveThreadId(null);
@@ -182,7 +184,7 @@ export function Canvas({ comments, onRegisterPanTo }: CanvasProps) {
         onClick={handleCanvasClick}
       />
 
-      {/* HTML Overlay for Interactive Comment Pins & Drafts */}
+      {/* HTML overlay is pointer-events-none so transparent areas do not intercept canvas pan/zoom */}
       <div className="absolute inset-0 pointer-events-none">
         {openThreads.map((thread) => (
           <CommentPin
@@ -206,12 +208,10 @@ export function Canvas({ comments, onRegisterPanTo }: CanvasProps) {
         )}
       </div>
 
-      {/* Top Banner when placing comment */}
       {comments.isPlacingComment && (
         <PlacementBanner onCancel={comments.cancelPlacing} />
       )}
 
-      {/* Bottom controls: zoom & instructions */}
       <CanvasControls zoom={camera.zoom} onResetView={resetView} />
     </div>
   );

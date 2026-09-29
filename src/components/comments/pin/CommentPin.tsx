@@ -27,7 +27,8 @@ export const CommentPin: React.FC<CommentPinProps> = ({
   const initials = getInitials(thread.author);
   const replyCount = thread.replies.length;
 
-  // Scale with zoom: bubble cannot increase from its original size, only decrease (scale <= 1.0)
+  // Pin is 1.0x at the zoom level where it was authored, and shrinks when zooming out to reduce
+  // visual clutter. Capping at 1.0x prevents pins from ballooning over artwork when zooming in close.
   const createdZoom =
     typeof thread.zoom === "number" && !isNaN(thread.zoom) && thread.zoom > 0
       ? thread.zoom
@@ -35,7 +36,7 @@ export const CommentPin: React.FC<CommentPinProps> = ({
   const currentZoom = camera.zoom || 1;
   const scale = Math.max(Math.min(currentZoom / createdZoom, 1.0), 0.2);
 
-  // If the bubble is really small (e.g. zoomed far out), don't show the hover preview tooltip
+  // Suppress preview tooltip when zoomed far out to prevent cards from occluding dense pin clusters
   const isReallySmall = scale < 0.55;
 
   return (
@@ -47,12 +48,11 @@ export const CommentPin: React.FC<CommentPinProps> = ({
         zIndex: isActive ? 40 : 20,
       }}
     >
-      {/* Hover preview card - positioned so pin sits at top-left corner and drawn BEHIND the pin (z-10) */}
       {isHovered && !isReallySmall && (
         <CommentPinTooltip thread={thread} scale={scale} />
       )}
 
-      {/* Scaled Pin Body - drawn OVER the hover card (z-20) with anchor point at bottom center */}
+      {/* Pin has higher z-index than hover card so the anchor floats visibly over the card's top-left */}
       <div
         className="relative group cursor-pointer pointer-events-auto transition-transform duration-75 z-20"
         style={{
@@ -78,7 +78,6 @@ export const CommentPin: React.FC<CommentPinProps> = ({
         >
           {initials}
 
-          {/* Reply count badge */}
           {replyCount > 0 && (
             <span className="absolute -top-1.5 -right-1.5 bg-red-700 text-slate-200 text-[10px] font-bold px-1.5 py-0.2 rounded-full border-2 border-black shadow-sm flex items-center gap-0.5">
               {replyCount}
@@ -86,7 +85,7 @@ export const CommentPin: React.FC<CommentPinProps> = ({
           )}
         </div>
 
-        {/* Pin triangle indicator pointing to the exact anchor point */}
+        {/* Triangle tip pointing down to the exact anchored world coordinate */}
         <div
           className={`w-0 h-0 mx-auto border-l-4 border-l-transparent border-r-4 border-r-transparent border-t-6 transition-colors ${
             isActive

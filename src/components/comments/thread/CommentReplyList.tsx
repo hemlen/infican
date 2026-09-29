@@ -18,6 +18,7 @@ export const CommentReplyList: React.FC<CommentReplyListProps> = ({
 
   if (replies.length === 0) return null;
 
+  // Show the first reply as a preview when collapsed to give immediate discussion context
   const hasManyReplies = replies.length > 1;
   const visibleReplies = hasManyReplies && !isExpanded ? [replies[0]] : replies;
   const hiddenCount = replies.length - visibleReplies.length;
@@ -33,7 +34,6 @@ export const CommentReplyList: React.FC<CommentReplyListProps> = ({
         />
       ))}
 
-      {/* Expand toggle */}
       {hasManyReplies && !isExpanded && (
         <button
           type="button"
@@ -54,7 +54,6 @@ export const CommentReplyList: React.FC<CommentReplyListProps> = ({
         </button>
       )}
 
-      {/* Collapse toggle */}
       {hasManyReplies && isExpanded && (
         <button
           type="button"

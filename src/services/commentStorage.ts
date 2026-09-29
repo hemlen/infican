@@ -9,7 +9,7 @@ export const INITIAL_DEMO_THREADS: CommentThread[] = [
     author: "Alex Morgan",
     avatarColor: "bg-blue-500",
     content: "We should consider scaling this red accent block to match the primary grid alignment.",
-    createdAt: Date.now() - 1000 * 60 * 35, // 35 minutes ago
+    createdAt: Date.now() - 1000 * 60 * 35,
     position: { x: 100, y: -20 },
     zoom: 1.5,
     status: "open",
@@ -42,7 +42,7 @@ export const INITIAL_DEMO_THREADS: CommentThread[] = [
     author: "Jordan Lee",
     avatarColor: "bg-purple-500",
     content: "Origin crosshair (0,0) looks crisp. Ready for the vector exporter.",
-    createdAt: Date.now() - 1000 * 60 * 180, // 3 hours ago
+    createdAt: Date.now() - 1000 * 60 * 180,
     position: { x: 0, y: 30 },
     zoom: 1,
     status: "resolved",
@@ -50,9 +50,8 @@ export const INITIAL_DEMO_THREADS: CommentThread[] = [
   },
 ];
 
-/**
- * Validates and sanitizes a raw thread array from localStorage.
- */
+// Validates untrusted localStorage entries. Ensures position coordinates and zoom are strictly
+// finite numbers to safeguard against rendering loops or projection breakdown on corrupted state.
 function sanitizeThreads(data: unknown[]): CommentThread[] {
   return data
     .filter((t): t is Record<string, any> => t !== null && typeof t === "object")

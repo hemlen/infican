@@ -50,7 +50,6 @@ export const CommentThreadCard: React.FC<CommentThreadCardProps> = ({
           : "bg-slate-900/40 border-slate-800 hover:border-slate-700/80 hover:bg-slate-900/60"
       } p-3.5 mb-3`}
     >
-      {/* Thread Header */}
       <div className="flex items-start justify-between gap-2 mb-2">
         <div className="flex items-center gap-2 min-w-0">
           <div
@@ -78,7 +77,7 @@ export const CommentThreadCard: React.FC<CommentThreadCardProps> = ({
           </div>
         </div>
 
-        {/* Quick action buttons */}
+        {/* Prevent toolbar clicks from bubbling to card selection */}
         <div
           className="flex items-center gap-1 shrink-0"
           onClick={(e) => e.stopPropagation()}
@@ -137,7 +136,6 @@ export const CommentThreadCard: React.FC<CommentThreadCardProps> = ({
         </div>
       </div>
 
-      {/* Main Comment Content / Inline Edit */}
       {isEditing ? (
         <div className="pl-9 pr-1">
           <InlineCommentEditor
@@ -156,7 +154,6 @@ export const CommentThreadCard: React.FC<CommentThreadCardProps> = ({
         </p>
       )}
 
-      {/* Nested Replies Section */}
       <CommentReplyList
         replies={thread.replies}
         onEditReply={
@@ -165,7 +162,6 @@ export const CommentThreadCard: React.FC<CommentThreadCardProps> = ({
         onDeleteReply={(replyId) => onDeleteReply(thread.id, replyId)}
       />
 
-      {/* Reply Trigger or Reply Input Form */}
       <CommentReplyForm
         currentUser={currentUser}
         replyCount={thread.replies.length}

@@ -18,11 +18,12 @@ export const CommentPinTooltip: React.FC<CommentPinTooltipProps> = ({
     <div
       className="absolute w-64 bg-slate-900/95 backdrop-blur-md border border-slate-700/80 text-slate-100 rounded-xl p-3 shadow-2xl text-left pointer-events-none z-10 animate-in fade-in zoom-in-95 duration-100"
       style={{
+        // Align card so the scaled canvas pin anchors directly over its top-left corner
         left: `${-16 * scale - 10}px`,
         top: `${-38 * scale - 10}px`,
       }}
     >
-      {/* Header row with padding offset so pin sits neatly at top-left */}
+      {/* Dynamic left padding reserves clearance for the floating pin regardless of its zoom scale */}
       <div
         className="flex items-start justify-between gap-1 mb-1.5"
         style={{

@@ -19,17 +19,14 @@ export function useComments() {
   const [draftPosition, setDraftPosition] = useState<Point | null>(null);
   const [draftZoom, setDraftZoom] = useState<number | null>(null);
 
-  // Sync threads to storage
   useEffect(() => {
     saveStoredThreads(threads);
   }, [threads]);
 
-  // Sync username to storage
   useEffect(() => {
     saveStoredUsername(currentUser);
   }, [currentUser]);
 
-  // Thread CRUD operations
   const createThread = useCallback(
     (position: Point, content: string, customAuthor?: string, zoomLevel?: number): CommentThread => {
       const author = customAuthor?.trim() || currentUser.trim() || "Anonymous";
@@ -40,6 +37,7 @@ export function useComments() {
         content: content.trim(),
         createdAt: Date.now(),
         position,
+        // Store creation zoom as baseline reference for visual scale calculations
         zoom: zoomLevel ?? draftZoom ?? 1,
         status: "open",
         replies: [],
@@ -88,7 +86,6 @@ export function useComments() {
     );
   }, []);
 
-  // Reply CRUD operations
   const addReply = useCallback(
     (threadId: string, content: string, customAuthor?: string) => {
       const trimmed = content.trim();
@@ -146,7 +143,6 @@ export function useComments() {
     );
   }, []);
 
-  // Placement and Draft workflows
   const startPlacingComment = useCallback(() => {
     setIsPlacingComment(true);
     setDraftPosition(null);
@@ -175,6 +171,7 @@ export function useComments() {
   const selectThread = useCallback((threadId: string) => {
     setActiveThreadId(threadId);
     setIsPanelOpen(true);
+    // Switch active tab so selecting a pin automatically exposes the corresponding thread card
     setThreads((prev) => {
       const found = prev.find((t) => t.id === threadId);
       if (found) {
