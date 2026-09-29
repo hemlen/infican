@@ -23,7 +23,6 @@ export function useCamera(options: UseCameraOptions = {}) {
 
   const [isDragging, setIsDragging] = useState(false);
 
-  // Keep camera ref for access inside native listeners and animation loops
   const cameraRef = useRef(camera);
   cameraRef.current = camera;
 
@@ -54,20 +53,21 @@ export function useCamera(options: UseCameraOptions = {}) {
         };
       });
     },
-    [minZoom, maxZoom]
+    [minZoom, maxZoom],
   );
 
-  const handleMouseDown = useCallback((e: React.MouseEvent<HTMLCanvasElement>) => {
-    if (e.button === 2) {
-      // Right click drag initiation
-      isDraggingRef.current = true;
-      setIsDragging(true);
-      lastMousePosRef.current = { x: e.clientX, y: e.clientY };
-    }
-  }, []);
+  const handleMouseDown = useCallback(
+    (e: React.MouseEvent<HTMLCanvasElement>) => {
+      if (e.button === 2) {
+        isDraggingRef.current = true;
+        setIsDragging(true);
+        lastMousePosRef.current = { x: e.clientX, y: e.clientY };
+      }
+    },
+    [],
+  );
 
   const handleContextMenu = useCallback((e: React.MouseEvent) => {
-    // Prevent default context menu so right click drag is seamless
     e.preventDefault();
   }, []);
 
