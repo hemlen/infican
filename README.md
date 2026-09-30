@@ -63,6 +63,7 @@ infican/
 │   │   └── stlParser.ts             # Binary and ASCII STL mesh parser
 │   ├── App.tsx                      # Root application layout
 │   └── main.tsx                     # Vite React entry point
+├── DECISIONS.md                     # Key product & technical architecture decisions
 ├── playwright.config.ts             # Playwright configuration
 ├── vite.config.ts                   # Vite configuration
 └── vitest.config.ts                 # Vitest test runner configuration
