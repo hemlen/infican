@@ -8,7 +8,7 @@ import {
 import { InlineCommentEditor } from "../editor/InlineCommentEditor";
 import { CommentReplyList } from "./CommentReplyList";
 import { CommentReplyForm } from "./CommentReplyForm";
-import { CheckCircle2, RotateCcw, Trash2, MapPin, Pencil } from "lucide-react";
+import { Trash2, MapPin, Pencil } from "lucide-react";
 
 interface CommentThreadCardProps {
   thread: CommentThread;
