@@ -40,6 +40,7 @@ export const CommentPanel: React.FC<CommentPanelProps> = ({
     editReply,
     addReply,
     deleteReply,
+    resetToDemo,
     openCount,
     resolvedCount,
   } = comments;
@@ -111,6 +112,7 @@ export const CommentPanel: React.FC<CommentPanelProps> = ({
           <CommentEmptyState
             activeFilter={activeFilter}
             onStartPlacing={startPlacingComment}
+            onResetDemo={resetToDemo}
           />
         ) : (
           filteredThreads.map((thread) => (
@@ -135,7 +137,18 @@ export const CommentPanel: React.FC<CommentPanelProps> = ({
 
       <div className="p-3 border-t border-slate-800/80 text-[10px] text-slate-500 flex items-center justify-between">
         <span>Press Esc to cancel</span>
-        <span>Saved locally</span>
+        <div className="flex items-center gap-1.5">
+          <span>Saved locally</span>
+          <span>•</span>
+          <button
+            type="button"
+            onClick={resetToDemo}
+            className="text-slate-400 hover:text-blue-400 underline underline-offset-2 transition-colors cursor-pointer"
+            title="Reset comments to default mock threads"
+          >
+            Reset demo
+          </button>
+        </div>
       </div>
     </aside>
   );

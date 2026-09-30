@@ -56,6 +56,14 @@ export function useCamera(options: UseCameraOptions = {}) {
     [minZoom, maxZoom],
   );
 
+  const panBy = useCallback((deltaX: number, deltaY: number) => {
+    setCamera((prev) => ({
+      ...prev,
+      x: prev.x + deltaX,
+      y: prev.y + deltaY,
+    }));
+  }, []);
+
   const handleMouseDown = useCallback(
     (e: React.MouseEvent<HTMLCanvasElement>) => {
       if (e.button === 2) {
@@ -109,6 +117,7 @@ export function useCamera(options: UseCameraOptions = {}) {
     isDragging,
     resetView,
     zoomAt,
+    panBy,
     handleMouseDown,
     handleContextMenu,
   };

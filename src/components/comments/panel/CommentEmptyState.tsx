@@ -5,11 +5,13 @@ import { MessageSquare, CheckCircle, Plus } from "lucide-react";
 interface CommentEmptyStateProps {
   activeFilter: CommentStatus;
   onStartPlacing: () => void;
+  onResetDemo?: () => void;
 }
 
 export const CommentEmptyState: React.FC<CommentEmptyStateProps> = ({
   activeFilter,
   onStartPlacing,
+  onResetDemo,
 }) => {
   return (
     <div className="h-64 flex flex-col items-center justify-center text-center p-6 text-slate-500">
@@ -24,14 +26,25 @@ export const CommentEmptyState: React.FC<CommentEmptyStateProps> = ({
           <p className="text-[11px] text-slate-500 mb-4 max-w-xs">
             Click the "+" button above or press below to drop a pin on the canvas.
           </p>
-          <button
-            type="button"
-            onClick={onStartPlacing}
-            className="px-3 py-1.5 bg-blue-600 hover:bg-blue-500 text-white text-xs font-medium rounded-lg shadow-sm transition-colors flex items-center gap-1.5 cursor-pointer"
-          >
-            <Plus className="w-3.5 h-3.5" />
-            Add comment
-          </button>
+          <div className="flex flex-col items-center gap-2">
+            <button
+              type="button"
+              onClick={onStartPlacing}
+              className="px-3 py-1.5 bg-blue-600 hover:bg-blue-500 text-white text-xs font-medium rounded-lg shadow-sm transition-colors flex items-center gap-1.5 cursor-pointer"
+            >
+              <Plus className="w-3.5 h-3.5" />
+              Add comment
+            </button>
+            {onResetDemo && (
+              <button
+                type="button"
+                onClick={onResetDemo}
+                className="text-[11px] text-slate-400 hover:text-blue-400 underline underline-offset-2 transition-colors cursor-pointer pt-1"
+              >
+                Restore demo comments
+              </button>
+            )}
+          </div>
         </>
       ) : (
         <>
@@ -44,6 +57,15 @@ export const CommentEmptyState: React.FC<CommentEmptyStateProps> = ({
           <p className="text-[11px] text-slate-500 max-w-xs">
             Comments marked as resolved will be archived here and hidden from the canvas.
           </p>
+          {onResetDemo && (
+            <button
+              type="button"
+              onClick={onResetDemo}
+              className="mt-3 text-[11px] text-slate-400 hover:text-blue-400 underline underline-offset-2 transition-colors cursor-pointer"
+            >
+              Restore demo comments
+            </button>
+          )}
         </>
       )}
     </div>

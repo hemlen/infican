@@ -12,7 +12,7 @@ export const CanvasControls: React.FC<CanvasControlsProps> = ({
   return (
     <>
       <div className="absolute bottom-4 left-4 flex items-center gap-3 text-xs text-slate-500 pointer-events-none select-none">
-        <span>Right-click + Drag to pan • Scroll to zoom</span>
+        <span>Two-finger swipe or Right-click to pan • Pinch / Scroll to zoom</span>
       </div>
 
       <div className="absolute bottom-4 right-4 flex items-center gap-3 px-3 py-1.5 rounded-lg bg-slate-900/80 backdrop-blur border border-slate-800 text-xs text-slate-400 pointer-events-auto shadow-md select-none">

@@ -7,6 +7,7 @@ import {
   saveStoredThreads,
   loadStoredUsername,
   saveStoredUsername,
+  resetStoredThreadsToDemo,
 } from "../services/commentStorage";
 
 export function useComments() {
@@ -181,6 +182,12 @@ export function useComments() {
     });
   }, []);
 
+  const resetToDemo = useCallback(() => {
+    const freshDemo = resetStoredThreadsToDemo();
+    setThreads(freshDemo);
+    setActiveThreadId(null);
+  }, []);
+
   const openCount = threads.filter((t) => t.status === "open").length;
   const resolvedCount = threads.filter((t) => t.status === "resolved").length;
 
@@ -211,6 +218,7 @@ export function useComments() {
     addReply,
     editReply,
     deleteReply,
+    resetToDemo,
     openCount,
     resolvedCount,
   };
