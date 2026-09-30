@@ -1,16 +1,14 @@
 import React, { useState } from "react";
 import type { CommentThread } from "../../../types/comment";
-import { getInitials, formatRelativeTime, formatFullDate } from "../../../utils/comment";
+import {
+  getInitials,
+  formatRelativeTime,
+  formatFullDate,
+} from "../../../utils/comment";
 import { InlineCommentEditor } from "../editor/InlineCommentEditor";
 import { CommentReplyList } from "./CommentReplyList";
 import { CommentReplyForm } from "./CommentReplyForm";
-import {
-  CheckCircle2,
-  RotateCcw,
-  Trash2,
-  MapPin,
-  Pencil,
-} from "lucide-react";
+import { CheckCircle2, RotateCcw, Trash2, MapPin, Pencil } from "lucide-react";
 
 interface CommentThreadCardProps {
   thread: CommentThread;
@@ -110,23 +108,6 @@ export const CommentThreadCard: React.FC<CommentThreadCardProps> = ({
 
           <button
             type="button"
-            onClick={() => onToggleResolve(thread.id)}
-            title={thread.status === "open" ? "Mark as Resolved" : "Reopen Comment"}
-            className={`p-1 rounded transition-colors cursor-pointer ${
-              thread.status === "open"
-                ? "text-slate-400 hover:text-emerald-400 hover:bg-emerald-500/10"
-                : "text-emerald-400 hover:text-slate-200 hover:bg-slate-800"
-            }`}
-          >
-            {thread.status === "open" ? (
-              <CheckCircle2 className="w-3.5 h-3.5" />
-            ) : (
-              <RotateCcw className="w-3.5 h-3.5" />
-            )}
-          </button>
-
-          <button
-            type="button"
             onClick={() => onDeleteThread(thread.id)}
             title="Delete Thread"
             className="p-1 rounded text-slate-400 hover:text-rose-400 hover:bg-rose-500/10 transition-colors cursor-pointer"
@@ -157,7 +138,9 @@ export const CommentThreadCard: React.FC<CommentThreadCardProps> = ({
       <CommentReplyList
         replies={thread.replies}
         onEditReply={
-          onEditReply ? (replyId, content) => onEditReply(thread.id, replyId, content) : undefined
+          onEditReply
+            ? (replyId, content) => onEditReply(thread.id, replyId, content)
+            : undefined
         }
         onDeleteReply={(replyId) => onDeleteReply(thread.id, replyId)}
       />
